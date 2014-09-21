@@ -13,7 +13,7 @@ namespace SimpleBrowser.Elements
 		{
 		}
 		public Browser FrameBrowser { get; private set; }
-		internal override string GetAttributeValue(string name)
+		public override string GetAttributeValue(string name)
 		{
 			if (name == "SimpleBrowser.WebDriver:frameWindowHandle")
 			{
@@ -35,7 +35,7 @@ namespace SimpleBrowser.Elements
 				return this.Element.GetAttributeCI("name");
 			}
 		}
-		internal override Browser OwningBrowser
+		public override Browser OwningBrowser
 		{
 			get
 			{

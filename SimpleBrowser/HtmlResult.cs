@@ -25,7 +25,7 @@ namespace SimpleBrowser
 		private readonly Browser _browser;
 		int _index;
 
-		internal HtmlResult(List<HtmlElement> results, Browser browser)
+		public HtmlResult(List<HtmlElement> results, Browser browser)
 		{
 			_current = results.Count > 0 ? results[0] : null;
 			_list = results;
@@ -40,7 +40,7 @@ namespace SimpleBrowser
 			_list = new List<HtmlElement>(new[] { result });
 		}
 
-		internal HtmlElement CurrentElement
+		public HtmlElement CurrentElement
 		{
 			get { return _current; }
 		}

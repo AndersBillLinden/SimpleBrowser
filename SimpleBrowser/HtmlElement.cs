@@ -8,9 +8,11 @@ using System.Collections.Generic;
 
 namespace SimpleBrowser
 {
-	internal class HtmlElement
+	public class HtmlElement
 	{
 		private readonly XElement _element;
+
+		public event Action<HtmlElement> Clicked;
 
 		public HtmlElement(XElement element)
 		{
@@ -32,7 +34,7 @@ namespace SimpleBrowser
 			return x.Attributes().Where(h => h.Name.LocalName.ToLower() == name.ToLower()).FirstOrDefault();
 		}
 
-		internal virtual string GetAttributeValue(string name)
+		public virtual string GetAttributeValue(string name)
 		{
 			return GetAttributeValue(Element, name);
 		}
@@ -104,6 +106,9 @@ namespace SimpleBrowser
 
 		public virtual ClickResult Click()
 		{
+			if (Clicked != null)
+				Clicked(this);
+
 			return ClickResult.SucceededNoOp;
 		}
 
@@ -112,7 +117,7 @@ namespace SimpleBrowser
 			return Click();
 		}
 
-		internal static HtmlElement CreateFor(XElement element)
+		public static HtmlElement CreateFor(XElement element)
 		{
 			HtmlElement result  = null;
 			switch (element.Name.LocalName.ToLower())
@@ -223,11 +228,11 @@ namespace SimpleBrowser
 			}
 		}
 
-		internal XElement Element
+		public XElement Element
 		{
 			get { return _element; }
 		}
-		internal virtual Browser OwningBrowser { get; set; }
+		public virtual Browser OwningBrowser { get; set; }
 
 	}
 }

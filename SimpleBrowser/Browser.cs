@@ -61,6 +61,7 @@ namespace SimpleBrowser
 			Browser.Register(this);
 		}
 
+		public event Action<Browser, HtmlElement> Clicked;
 		public event Action<Browser, string> MessageLogged;
 		public event Action<Browser, HttpRequestLog> RequestLogged;
 		public event Action<Browser, Browser> NewWindowOpened;
@@ -236,7 +237,7 @@ namespace SimpleBrowser
 
 		public Browser CreateReferenceView()
 		{
-			Browser b = new Browser
+			Browser b = new Browser(_reqFactory)
 			{
 				Cookies = Cookies,
 				_doc = _doc,
@@ -403,6 +404,14 @@ namespace SimpleBrowser
 			return Navigate(url);
 		}
 
+		public string Fetch(Uri url)
+		{
+			string result;
+			FetchPage(ref url, "GET", null, null, null, null, _timeoutMilliseconds, out result);
+
+			return result;
+		}
+
 		public bool NavigateBack()
 		{
 			CheckDisposed();
@@ -558,6 +567,13 @@ namespace SimpleBrowser
 							htmlElement.OwningBrowser = this;
 							htmlElement.NavigationRequested += htmlElement_NavigationRequested;
 					}
+
+			htmlElement.Clicked += sender =>
+			{
+				if (Clicked != null)
+					Clicked(htmlElement.OwningBrowser, htmlElement);
+			};
+
 			return htmlElement;
 		}
 
@@ -601,6 +617,19 @@ namespace SimpleBrowser
 
 			string html;
 
+			if (FetchPage(ref uri, method, userVariables, postData, contentType, encodingType, timeoutMilliseconds, out html))
+			{
+				this.RemoveChildBrowsers(); //Any frames contained in the previous state should be removed. They will be recreated if we ever navigate back
+				this.AddNavigationState(new NavigationState() {Html = html, Url = uri, ContentType = contentType});
+
+				return true;
+			}
+
+			return false;
+		}
+
+		public bool FetchPage(ref Uri uri, string method, NameValueCollection userVariables, string postData, string contentType, string encodingType, int timeoutMilliseconds, out string html)
+		{
 			if (uri.IsFile)
 			{
 				StreamReader reader = new StreamReader(uri.AbsolutePath);
@@ -612,6 +641,8 @@ namespace SimpleBrowser
 				bool handle301Or302Redirect;
 				int maxRedirects = 10;
 				string postBody = "";
+
+				html = "";
 				do
 				{
 					Debug.WriteLine(uri.ToString());
@@ -626,7 +657,6 @@ namespace SimpleBrowser
 
 					try
 					{
-
 						req = PrepareRequestObject(uri, method, contentType, timeoutMilliseconds);
 					}
 					catch (NotSupportedException)
@@ -808,12 +838,8 @@ namespace SimpleBrowser
 					{
 						LogRequestData();
 					}
-				}
-				while (handle301Or302Redirect) ;
-			} 
-
-			this.RemoveChildBrowsers(); //Any frames contained in the previous state should be removed. They will be recreated if we ever navigate back
-			this.AddNavigationState(new NavigationState() { Html = html, Url = uri, ContentType = contentType });
+				} while (handle301Or302Redirect);
+			}
 			return true;
 		}
 
