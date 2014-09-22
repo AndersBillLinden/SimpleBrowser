@@ -12,5 +12,6 @@ namespace SimpleBrowser
 		public string ContentType;
 		public string Html;
 		internal XDocument XDocument;
+		public object ScriptHost;
 	}
 }

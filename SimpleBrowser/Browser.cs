@@ -194,6 +194,19 @@ namespace SimpleBrowser
 			}
 		}
 
+		public object CurrentScriptHost
+		{
+			get
+			{
+				return _history[_historyPosition].ScriptHost;
+			}
+
+			set
+			{
+				_history[_historyPosition].ScriptHost = value;
+			}
+		}
+
 		#endregion internal properties end
 
 		#region private properties start
